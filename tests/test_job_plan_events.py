@@ -76,5 +76,25 @@ class TestJobPlanEventSteps(TestCase):
         self.assertEqual(output.count("5"), 2)
 
 
+class TestLaunchContextEventRegistry(TestCase):
+    """Tests for LaunchContext.getOrCreateEvent — the shared-event guarantee."""
+
+    def test_same_id_returns_same_event(self):
+        """getOrCreateEvent called twice with the same ID returns the same object."""
+        self.assertTrue(_C.event_steps_share_event(signal_id=2, wait_id=2))
+
+    def test_different_ids_return_different_events(self):
+        """getOrCreateEvent called with different IDs returns distinct objects."""
+        self.assertFalse(_C.event_steps_share_event(signal_id=1, wait_id=2))
+
+    def test_zero_ids_share_event(self):
+        """ID 0 is a valid key — same-ID guarantee holds at the boundary."""
+        self.assertTrue(_C.event_steps_share_event(signal_id=0, wait_id=0))
+
+    def test_large_ids_share_event(self):
+        """Non-contiguous large IDs are handled correctly by the unordered_map."""
+        self.assertTrue(_C.event_steps_share_event(signal_id=999, wait_id=999))
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
