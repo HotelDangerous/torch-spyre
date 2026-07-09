@@ -438,33 +438,62 @@ class JobPlanStepHostCompute final : public JobPlanStep {
 };
 
 /**
- * TODO: Polish @brief
- * TODO: Polish description
- * @brief Construct an `EventSignalOp` step
- * 
- * Constructs an `EventSignalOp` to be inserted into the `flex::RuntimeStream`.
- * A `flex::EventSignalOp` is a `RuntimeOperation` that marks an event as
- * signled. It acts as a barrier
+ * @brief JobPlanStep that signals a shared `flex::Event` at launch time.
  *
+ * When construct() is called, retrieves (or creates) the `flex::Event`
+ * for `event_id_` from the `LaunchContext` registry and submits an
+ * `EventSignalOp` to the stream. A paired `JobPlanStepEventWait` with the
+ * same `event_id` on another stream will block until this signal is delivered.
  */
 class JobPlanStepEventSignal final : public JobPlanStep {
  public:
-  JobPlanStepEventSignal(int event_id) : event_id_(event_id) {}
+  explicit JobPlanStepEventSignal(int event_id) : event_id_(event_id) {}
 
-  // TODO: @Brief
-  // TODO: Description
-  // TODO: @Params
+  /**
+   * @brief Submit an EventSignalOp for this step's event onto the stream.
+   * @param ctx Launch context holding the shared event registry.
+   * @param stream Stream to submit the signal operation onto.
+   */
   void construct(LaunchContext& ctx, const SpyreStream& stream) const override;
 
-  // TODO: @brief 
-  // TODO: Description
-  // TODO: @param
-  virtual void write(std::ostream& os) const override;
+  /**
+   * @brief Write a human-readable description of this step to `os`.
+   * @param os Output stream to write to.
+   */
+  void write(std::ostream& os) const override;
 
  private:
   int event_id_;
 };
 
+/**
+ * @brief JobPlanStep that waits on a shared `flex::Event` at launch time.
+ *
+ * When construct() is called, retrieves (or creates) the `flex::Event`
+ * for `event_id_` from the `LaunchContext` registry and submits an
+ * `EventWaitOp` to the stream. The stream blocks until the paired
+ * `JobPlanStepEventSignal` with the same `event_id` delivers its signal.
+ */
+class JobPlanStepEventWait final : public JobPlanStep {
+ public:
+  explicit JobPlanStepEventWait(int event_id) : event_id_(event_id) {}
+
+  /**
+   * @brief Submit an EventWaitOp for this step's event onto the stream.
+   * @param ctx Launch context holding the shared event registry.
+   * @param stream Stream to submit the wait operation onto.
+   */
+  void construct(LaunchContext& ctx, const SpyreStream& stream) const override;
+
+  /**
+   * @brief Write a human-readable description of this step to `os`.
+   * @param os Output stream to write to.
+   */
+  void write(std::ostream& os) const override;
+
+ private:
+  int event_id_;
+};
 
 /**
  * @brief A torch-spyre internal container for executing a unit of work

@@ -170,11 +170,24 @@ void JobPlanStepHostCompute::write(std::ostream& os) const {
 }
 
 void JobPlanStepEventSignal::construct(LaunchContext& ctx,
-                                       const SpyreStream& stream) const {}
+                                       const SpyreStream& stream) const {
+  stream.launchEventSignal(ctx.getOrCreateEvent(event_id_));
+}
 
-void JobPlanStepEventSignal::write()
+void JobPlanStepEventSignal::write(std::ostream& os) const {
+  os << "  Event Signal\n";
+  os << "    Event ID: " << event_id_ << "\n";
+}
 
-void write
+void JobPlanStepEventWait::construct(LaunchContext& ctx,
+                                       const SpyreStream& stream) const {
+  stream.launchEventWait(ctx.getOrCreateEvent(event_id_));
+}
+
+void JobPlanStepEventWait::write(std::ostream& os) const {
+  os << "  Event Wait\n";
+  os << "    Event ID: " << event_id_ << "\n";
+}
 
 std::ostream& operator<<(std::ostream& os, const JobPlan& plan) {
   os << "============ JobPlan =============\n";
