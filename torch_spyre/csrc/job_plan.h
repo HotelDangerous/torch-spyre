@@ -24,6 +24,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -183,11 +184,27 @@ class HostBuffer {
  * during PrepareKernel.
  */
 struct LaunchContext {
-  /**
-   * @brief at::Tensor list of inputs and outputs
-   *
-   */
-  const std::vector<at::Tensor>& inputs_outputs;
+  public:
+    /**
+     * @brief at::Tensor list of inputs and outputs
+     *
+     */
+    const std::vector<at::Tensor>& inputs_outputs;
+
+    /**
+     * @brief Get or create the shared `flex::Event` for the given `event_id`.
+     *
+     * Returns the `flex::Event` associated with `event_id`. If no event exists
+     * for that ID, one is created, inserted into the registry, and returned.
+     * Calling with the same `event_id` twice always returns the same object.
+     *
+     * @param event_id Integer key identifying the event.
+     * @return Shared pointer to the `flex::Event` associated with `event_id`.
+     */
+    std::shared_ptr<flex::Event> getOrCreateEvent(int event_id);
+
+  private:
+    std::unordered_map<int, std::shared_ptr<flex::Event>> event_registry_;
 };
 
 /**
@@ -419,6 +436,35 @@ class JobPlanStepHostCompute final : public JobPlanStep {
   const void* input_buffer_;  // Non-owning pointer (JobPlan owns the buffer)
   std::vector<int64_t> ishape_;
 };
+
+/**
+ * TODO: Polish @brief
+ * TODO: Polish description
+ * @brief Construct an `EventSignalOp` step
+ * 
+ * Constructs an `EventSignalOp` to be inserted into the `flex::RuntimeStream`.
+ * A `flex::EventSignalOp` is a `RuntimeOperation` that marks an event as
+ * signled. It acts as a barrier
+ *
+ */
+class JobPlanStepEventSignal final : public JobPlanStep {
+ public:
+  JobPlanStepEventSignal(int event_id) : event_id_(event_id) {}
+
+  // TODO: @Brief
+  // TODO: Description
+  // TODO: @Params
+  void construct(LaunchContext& ctx, const SpyreStream& stream) const override;
+
+  // TODO: @brief 
+  // TODO: Description
+  // TODO: @param
+  virtual void write(std::ostream& os) const override;
+
+ private:
+  int event_id_;
+};
+
 
 /**
  * @brief A torch-spyre internal container for executing a unit of work
