@@ -184,27 +184,24 @@ class HostBuffer {
  * during PrepareKernel.
  */
 struct LaunchContext {
-  public:
-    /**
-     * @brief at::Tensor list of inputs and outputs
-     *
-     */
-    const std::vector<at::Tensor>& inputs_outputs;
+  /**
+   * @brief at::Tensor list of inputs and outputs
+   */
+  const std::vector<at::Tensor>& inputs_outputs;
 
-    /**
-     * @brief Get or create the shared `flex::Event` for the given `event_id`.
-     *
-     * Returns the `flex::Event` associated with `event_id`. If no event exists
-     * for that ID, one is created, inserted into the registry, and returned.
-     * Calling with the same `event_id` twice always returns the same object.
-     *
-     * @param event_id Integer key identifying the event.
-     * @return Shared pointer to the `flex::Event` associated with `event_id`.
-     */
-    std::shared_ptr<flex::Event> getOrCreateEvent(int event_id);
+  /**
+   * @brief Get or create the shared `flex::Event` for the given `event_id`.
+   *
+   * Returns the `flex::Event` associated with `event_id`. If no event exists
+   * for that ID, one is created, inserted into the registry, and returned.
+   * Calling with the same `event_id` twice always returns the same object.
+   *
+   * @param event_id Integer key identifying the event.
+   * @return Shared pointer to the `flex::Event` associated with `event_id`.
+   */
+  std::shared_ptr<flex::Event> getOrCreateEvent(int event_id);
 
-  private:
-    std::unordered_map<int, std::shared_ptr<flex::Event>> event_registry_;
+  std::unordered_map<int, std::shared_ptr<flex::Event>> event_registry_;
 };
 
 /**
