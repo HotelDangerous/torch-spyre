@@ -26,10 +26,10 @@
 
 #include <cstdlib>     // std::getenv
 #include <filesystem>  // NOLINT(build/c++17)
-#include <sstream>
 #include <flex/flex.hpp>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -452,46 +452,6 @@ PYBIND11_MODULE(_C, m) {
                " pinned_buffers=" + std::to_string(plan.pinned_buffers.size()) +
                ">";
       });
-  // Testing helper: build a minimal JobPlan with one EventSignal and one
-  // EventWait step. Does not require a device or stream.
-  m.def(
-      "make_event_plan",
-      [](int signal_id, int wait_id) {
-        auto plan = std::make_unique<spyre::JobPlan>();
-        plan->steps.push_back(
-            std::make_unique<spyre::JobPlanStepEventSignal>(signal_id));
-        plan->steps.push_back(
-            std::make_unique<spyre::JobPlanStepEventWait>(wait_id));
-        return plan;
-      },
-      py::arg("signal_id"), py::arg("wait_id"),
-      "Build a minimal JobPlan with one EventSignal and one EventWait step.\n"
-      "For testing only — does not require a device.");
-
-  // Testing helper: verify that two steps sharing the same event_id receive the
-  // same flex::Event object from LaunchContext::getOrCreateEvent. Returns true
-  // if pointer equality holds. Does not require a device or stream.
-  m.def(
-      "event_steps_share_event",
-      [](int signal_id, int wait_id) {
-        // Collect events retrieved by each step via getOrCreateEvent.
-        std::shared_ptr<flex::Event> signal_event;
-        std::shared_ptr<flex::Event> wait_event;
-
-        // LaunchContext requires a tensor list reference; an empty vector is
-        // fine here since neither EventSignal nor EventWait touches it.
-        std::vector<at::Tensor> empty_tensors;
-        spyre::LaunchContext ctx{empty_tensors};
-
-        signal_event = ctx.getOrCreateEvent(signal_id);
-        wait_event = ctx.getOrCreateEvent(wait_id);
-
-        return signal_event.get() == wait_event.get();
-      },
-      py::arg("signal_id"), py::arg("wait_id"),
-      "Return true if two getOrCreateEvent calls with the same ID return the\n"
-      "same flex::Event object (pointer equality). For testing only.");
-
   m.def("prepare_kernel", &spyre::prepareKernel, py::arg("spyrecode_dir"),
         py::arg("stream") = nullptr,
         "Prepare a kernel from a SpyreCode directory and return a JobPlan.\n\n"
