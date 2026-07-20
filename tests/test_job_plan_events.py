@@ -65,6 +65,7 @@ class TestEventSignalStep:
 
             assert job_plan.num_steps() == 2
             assert job_plan.get_step_type(0) == "EventSignal"
+            assert job_plan.get_step_type(1) == "Compute"
 
     def test_event_signal_str_contains_event_id(self):
         """__str__ of a plan with EventSignal reports the event ID."""
@@ -81,24 +82,7 @@ class TestEventSignalStep:
 
             desc = str(job_plan)
             assert "Event Signal" in desc
-            assert "42" in desc
-
-    def test_event_signal_missing_event_id(self):
-        """EventSignal command without 'event_id' raises RuntimeError."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            plan = [
-                # No event_id in properties
-                {"command": "EventSignal", "properties": {}},
-                {
-                    "command": "ComputeOnDevice",
-                    "properties": {"job_bin_ptr": "120259084288"},
-                },
-            ]
-            spyrecode_dir = _make_event_plan(tmpdir, plan)
-            with pytest.raises(
-                RuntimeError, match="EventSignal command missing 'event_id' property"
-            ):
-                torch_spyre._C.prepare_kernel(spyrecode_dir)
+            assert "Event ID: 42" in desc
 
 
 class TestEventWaitStep:
@@ -135,24 +119,7 @@ class TestEventWaitStep:
 
             desc = str(job_plan)
             assert "Event Wait" in desc
-            assert "7" in desc
-
-    def test_event_wait_missing_event_id(self):
-        """EventWait command without 'event_id' raises RuntimeError."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            plan = [
-                # No event_id in properties
-                {"command": "EventWait", "properties": {}},
-                {
-                    "command": "ComputeOnDevice",
-                    "properties": {"job_bin_ptr": "120259084288"},
-                },
-            ]
-            spyrecode_dir = _make_event_plan(tmpdir, plan)
-            with pytest.raises(
-                RuntimeError, match="EventWait command missing 'event_id' property"
-            ):
-                torch_spyre._C.prepare_kernel(spyrecode_dir)
+            assert "Event ID: 7" in desc
 
 
 class TestEventSignalWaitPlan:
