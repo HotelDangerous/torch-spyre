@@ -406,61 +406,64 @@ PYBIND11_MODULE(_C, m) {
   py::class_<spyre::JobPlan>(m, "JobPlan")
       .def(
           "num_steps",
-          [](const spyre::JobPlan& plan) {
-    return plan.steps.size(); },
+          [](const spyre::JobPlan& plan) { return plan.steps.size(); },
           "Get the number of steps in the JobPlan")
       .def(
           "job_allocation_size",
           [](const spyre::JobPlan& plan) {
-    return plan.job_allocation.at(0).total_size();
+            return plan.job_allocation.at(0).total_size();
           },
           "Get the size of the job allocation")
       .def(
           "get_step_type",
           [](const spyre::JobPlan& plan, size_t idx) {
-    TORCH_CHECK(idx < plan.steps.size(), "Step index out of range");
-    const auto& step = plan.steps[idx];
-    if (dynamic_cast<const spyre::JobPlanStepH2D*>(step.get())) {
-      return "H2D";
-    } else if (dynamic_cast<const spyre::JobPlanStepD2H*>(step.get())) {
-      return "D2H";
-    } else if (dynamic_cast<const spyre::JobPlanStepCompute*>(step.get())) {
-      return "Compute";
-    } else if (dynamic_cast<const spyre::JobPlanStepHostCompute*>(step.get())) {
-      return "HostCompute";
-    } else if (dynamic_cast<const spyre::JobPlanStepEventSignal*>(step.get())) {
-      return "EventSignal";
-    } else if (dynamic_cast<const spyre::JobPlanStepEventWait*>(step.get())) {
-      return "EventWait";
-    } else {
-      return "Unknown";
-    }
+            TORCH_CHECK(idx < plan.steps.size(), "Step index out of range");
+            const auto& step = plan.steps[idx];
+            if (dynamic_cast<const spyre::JobPlanStepH2D*>(step.get())) {
+              return "H2D";
+            } else if (dynamic_cast<const spyre::JobPlanStepD2H*>(step.get())) {
+              return "D2H";
+            } else if (dynamic_cast<const spyre::JobPlanStepCompute*>(
+                           step.get())) {
+              return "Compute";
+            } else if (dynamic_cast<const spyre::JobPlanStepHostCompute*>(
+                           step.get())) {
+              return "HostCompute";
+            } else if (dynamic_cast<const spyre::JobPlanStepEventSignal*>(
+                           step.get())) {
+              return "EventSignal";
+            } else if (dynamic_cast<const spyre::JobPlanStepEventWait*>(
+                           step.get())) {
+              return "EventWait";
+            } else {
+              return "Unknown";
+            }
           },
           py::arg("idx"), "Get the type of step at the given index")
       .def(
           "__str__",
           [](const spyre::JobPlan& plan) {
-    std::ostringstream oss;
-    oss << plan;
-    return oss.str();
+            std::ostringstream oss;
+            oss << plan;
+            return oss.str();
           },
           "Get a human-readable description of the JobPlan")
       .def(
           "get_step_pipeline_barrier",
           [](const spyre::JobPlan& plan, size_t idx) {
-    TORCH_CHECK(idx < plan.steps.size(), "Step index out of range");
-    return plan.steps[idx]->getPipelineBarrier();
+            TORCH_CHECK(idx < plan.steps.size(), "Step index out of range");
+            return plan.steps[idx]->getPipelineBarrier();
           },
           py::arg("idx"),
           "Get the pipeline_barrier flag for the step at the given index")
       .def("__repr__", [](const spyre::JobPlan& plan) {
-    return "<JobPlan steps=" + std::to_string(plan.steps.size()) +
-           " job_allocation_size=" +
-           std::to_string(plan.job_allocation.at(0).total_size()) +
-           " expected_inputs=" +
-           std::to_string(plan.expected_input_shapes.size()) +
-           " pinned_buffers=" + std::to_string(plan.pinned_buffers.size()) +
-           ">";
+        return "<JobPlan steps=" + std::to_string(plan.steps.size()) +
+               " job_allocation_size=" +
+               std::to_string(plan.job_allocation.at(0).total_size()) +
+               " expected_inputs=" +
+               std::to_string(plan.expected_input_shapes.size()) +
+               " pinned_buffers=" + std::to_string(plan.pinned_buffers.size()) +
+               ">";
       });
   m.def("prepare_kernel", &spyre::prepareKernel, py::arg("spyrecode_dir"),
         py::arg("stream") = nullptr,
