@@ -42,6 +42,8 @@
 #endif
 
 #include "logging.h"
+#include "logging_bindings.h"
+#include "logging_config.h"
 #include "prepare_kernel.h"
 #include "spyre_allocator.h"
 #include "spyre_device_enum.h"
@@ -195,6 +197,9 @@ PYBIND11_MODULE(_C, m) {
   m.def("free_runtime", &spyre::freeRuntime);
   m.def("device_count", &spyre::getVisibleDeviceCount);
   m.def("encode_constant", &spyre::encodeConstant);
+
+  // Initialize logging bindings
+  torch_spyre::logging::init_logging_bindings(m);
 
   py::enum_<spyre::ElementArrangement>(m, "ElementArrangement")
       .value("STANDARD", spyre::ElementArrangement::STANDARD)
@@ -443,6 +448,13 @@ PYBIND11_MODULE(_C, m) {
             return oss.str();
           },
           "Get a human-readable description of the JobPlan")
+          "get_step_pipeline_barrier",
+          [](const spyre::JobPlan& plan, size_t idx) {
+            TORCH_CHECK(idx < plan.steps.size(), "Step index out of range");
+            return plan.steps[idx]->getPipelineBarrier();
+          },
+          py::arg("idx"),
+          "Get the pipeline_barrier flag for the step at the given index")
       .def("__repr__", [](const spyre::JobPlan& plan) {
         return "<JobPlan steps=" + std::to_string(plan.steps.size()) +
                " job_allocation_size=" +
