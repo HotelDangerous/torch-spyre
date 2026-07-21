@@ -445,6 +445,7 @@ PYBIND11_MODULE(_C, m) {
     return oss.str();
           },
           "Get a human-readable description of the JobPlan")
+      .def(
           "get_step_pipeline_barrier",
           [](const spyre::JobPlan& plan, size_t idx) {
     TORCH_CHECK(idx < plan.steps.size(), "Step index out of range");
