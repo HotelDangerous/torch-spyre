@@ -180,7 +180,7 @@ void JobPlanStepEventSignal::write(std::ostream& os) const {
 }
 
 void JobPlanStepEventWait::construct(LaunchContext& ctx,
-                                       const SpyreStream& stream) const {
+                                     const SpyreStream& stream) const {
   stream.launchEventWait(ctx.getOrCreateEvent(event_id_));
 }
 
