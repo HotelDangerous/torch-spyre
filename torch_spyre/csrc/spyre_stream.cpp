@@ -227,13 +227,13 @@ void SpyreStream::launchHostCallback(flex::HostCallbackParams* params) const {
 }
 
 void SpyreStream::launchEventSignal(std::shared_ptr<flex::Event> event) const {
-  flex::EventSignalOp op(std::move(event));
-  resolveRuntimeHandle()->launchOperationEventSignal(&op);
+  auto* params = flex::createEventSignalParams(std::move(event));
+  resolveRuntimeHandle()->launchOperationEventSignal(params);
 }
 
 void SpyreStream::launchEventWait(std::shared_ptr<flex::Event> event) const {
-  flex::EventWaitOp op(std::move(event));
-  resolveRuntimeHandle()->launchOperationEventWait(&op);
+  auto* params = flex::createEventWaitParams(std::move(event));
+  resolveRuntimeHandle()->launchOperationEventWait(params);
 }
 
 void SpyreStream::fillAsync(const flex::CompositeAddress* dst, double value,
